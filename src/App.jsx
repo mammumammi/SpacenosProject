@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { db } from "./FirebaseConfig";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import Coingecko from "./components/CoinGecko";
+import WhaleTracker from "./components/WhaleTracker";
 
 function App() {
   useEffect(() => {
@@ -26,6 +27,7 @@ function App() {
   return (
     <div className="p-8 text-center">
       <Coingecko/>
+      <WhaleTracker/>
     </div>
   );
 }
