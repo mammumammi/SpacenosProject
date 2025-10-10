@@ -6,7 +6,7 @@ import admin from "firebase-admin";
 import path from "path";
 dotenv.config();
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
+
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -201,7 +201,7 @@ app.post("/priceSummarize",async (req,res) => {
 const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, "dist")));
 
-app.get("*", (req, res) => {
+app.get("/.*/", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
