@@ -118,37 +118,44 @@ const saveToFireStore = async (eventData) => {
 }
 
 app.post("/summarize", async (req, res) => {
-    try{
-        const transactions = req.body.transactions || [];
-        if (transactions.length === 0){
-            return res.json({summaries: []});
-        }
+  try {
+    const transactions = req.body.transactions || [];
+    if (transactions.length === 0) {
+      return res.json({ summaries: [] });
+    }
 
-        const structuredSummary = await aiSummarize(transactions);
-        for (let i =0;i<structuredSummary.length;i++){
-            const transaction = transactions[i];
-            const analysis = structuredSummary[i];
+    const structuredSummary = await aiSummarize(transactions);
 
-            const eventData = {
-                hash: transaction.hash,       
-                token: transaction.tokenSymbol,
-                amount: transaction.amount || transaction.value,
-                from: transaction.from,
-                to: transaction.to,
-                chain: transaction.chain,
-                
-               
-                
-                alertType: analysis.alertType,
-                severity: analysis.severity,
-                summary: analysis.summary
-            }
-            await saveToFireStore(eventData);
-        };
-        const summaries = structuredSummary.map( s => s.summary);
-        res.json({summaries});
-    }   
-    catch (err) {
+    const summariesToReturn = [];
+
+    for (let i = 0; i < structuredSummary.length; i++) {
+      const transaction = transactions[i];
+      const analysis = structuredSummary[i];
+
+      const eventData = {
+        hash: transaction.hash,
+        token: transaction.tokenSymbol,
+        amount: transaction.amount || transaction.value,
+        from: transaction.from,
+        to: transaction.to,
+        chain: transaction.chain,
+        alertType: analysis.alertType,
+        severity: analysis.severity,
+        summary: analysis.summary,
+      };
+
+      await saveToFireStore(eventData);
+
+      // Push the full object instead of just summary text
+      summariesToReturn.push({
+        summary: analysis.summary,
+        alertType: analysis.alertType,
+        severity: analysis.severity,
+      });
+    }
+
+    res.json({ summaries: summariesToReturn }); // ✅ return full objects
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to generate AI summaries" });
   }

@@ -1,176 +1,177 @@
-/*{
-ETHERSCAN_API_KEY=VZFDUWB3YGQ1YCDKTCU1D6DDSS
-BSCSCAN_API_KEY=ZM8ACMJB67C2IXKKBF8URFUNSY
-SNOWSCAN_API_KEY=ATJQERBKV1CI3GVKNSE3Q7RGEJ
-ARBISCAN_API_KEY=B6SVGA7K3YBJEQ69AFKJF4YHVX
-OPTIMISM_API_KEY=66N5FRNV1ZD4I87S7MAHCJVXFJ
-
-ETHERSCAN_API_URL=https://api.etherscan.io/api
-BSCSCAN_API_KEY=https://api.bscscan.com/api
-SNOWSCAN_API_KEY=https://api.snowscan.xyz/api
-ARBISCAN_API_KEY=https://api.arbiscan.io/api
-OPTIMISM_API_KEY=https://api-optimistic.etherscan.io/api
-}*/
-
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { FaExternalLinkAlt } from "react-icons/fa";
 
-
-const WhaleTracker = () => {
-const [events, setEvents] = useState([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState(null);
-const [summaries, setSummaries] = useState([]);
-
-const fetchWhaleEvents = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-        const walletAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
-        const threshold = 1000;
-        const native = false; //native = true,then it is Eth,else its ERC20
-
-        const chains = [
-          {name:"ETH",url:'https://api.etherscan.io/v2/api?chainid=1'},
-            {name:"BNB",url:'https://api.etherscan.io/v2/api?chainid=56'},
-            {name:"Arbitrum One",url:'https://api.etherscan.io/v2/api?chainid=42161'}
-        ]
-
-        const params = {
-            module: "account",
-            action: native ? "txlist" : "tokentx",
-            address: walletAddress,
-            page:1,
-            offset:100,
-            order:"desc",
-            apikey: import.meta.env.VITE_ETHERSCAN_API_KEY,
-        };
-
-        let newEvent =[];
-        for (let chain of chains){
-            const response = await axios.get(chain.url,{params});
-            const result = response.data.result;
-            const filtered = result.map((tx) => {
-                if (native){
-                    return {
-                        hash: tx.hash,
-                        from: tx.from,
-                        to: tx.to,
-                        value: Number(tx.value)/1e18,
-                        time: new Date(tx.timeStamp* 1000).toLocaleString(),
-                        chain:chain.name
-                    };
-                }
-                else {
-                    const decimals = Number(tx.TokenDecimal || 18);
-                    return{
-                        hash:tx.hash,
-                        from: tx.from,
-                        to: tx.to,
-                        tokenSymbol: tx.tokenSymbol,
-                        amount: Number (tx.value)/10**decimals,
-                        time:new Date(tx.timeStamp*1000).toLocaleString(),
-                        chain:chain.name
-                    };
-                }
-            }).filter((tx) => (native ? tx.value>=threshold : tx.amount >= threshold));
-            newEvent = newEvent.concat(filtered)
-            
-        }
-        setEvents(newEvent);
-
-
-        
-    }
-    catch(err){
-        console.log("Error happend when fetching data from etherscan:",err);
-        setError(err.message);
-    }
-    finally{
-        setLoading(false);
-    }
+const severityColors = {
+  High: "bg-red-600 text-white",
+  Medium: "bg-yellow-500 text-black",
+  Low: "bg-green-600 text-white",
 };
 
-  const getAiSummary = async () => {
-    // Get AI summaries from server
-const { data } = await axios.post("http://localhost:3001/summarize", { transactions: events });
-setSummaries(data.summaries);
+const WhaleTracker = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [structuredSummaries, setStructuredSummaries] = useState([]);
 
-  }
-  
+  useEffect(() => {
+    const fetchWhaleEvents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const walletAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+        const threshold = 1000;
+        const native = false;
 
+        const chains = [
+          { name: "ETH", url: "https://api.etherscan.io/v2/api?chainid=1" },
+          { name: "BNB", url: "https://api.etherscan.io/v2/api?chainid=56" },
+          { name: "Arbitrum One", url: "https://api.etherscan.io/v2/api?chainid=42161" },
+        ];
 
-useEffect( ()=>{
-    fetchWhaleEvents();
-    const interval = setInterval(fetchWhaleEvents,60_000);
-    return () => clearInterval(interval);
-},[]);
-useEffect(() => {
-    if (events.length > 0) {
-        const fetchSummary = async () => {
-            try {
-                const { data } = await axios.post("http://localhost:3001/summarize", { transactions: events });
-                setSummaries(data.summaries);
-            } catch (err) {
-                console.error("Failed to fetch AI summaries:", err);
-            }
+        const params = {
+          module: "account",
+          action: native ? "txlist" : "tokentx",
+          address: walletAddress,
+          page: 1,
+          offset: 100,
+          order: "desc",
+          apikey: import.meta.env.VITE_ETHERSCAN_API_KEY,
         };
-        fetchSummary();
+
+        let newEvent = [];
+        for (let chain of chains) {
+          const response = await axios.get(chain.url, { params });
+          const result = response.data.result;
+          const filtered = result
+            .map((tx) => {
+              if (native) {
+                return {
+                  hash: tx.hash,
+                  from: tx.from,
+                  to: tx.to,
+                  value: Number(tx.value) / 1e18,
+                  time: new Date(tx.timeStamp * 1000).toLocaleString(),
+                  chain: chain.name,
+                };
+              } else {
+                const decimals = Number(tx.TokenDecimal || 18);
+                return {
+                  hash: tx.hash,
+                  from: tx.from,
+                  to: tx.to,
+                  tokenSymbol: tx.tokenSymbol,
+                  amount: Number(tx.value) / 10 ** decimals,
+                  time: new Date(tx.timeStamp * 1000).toLocaleString(),
+                  chain: chain.name,
+                };
+              }
+            })
+            .filter((tx) => (native ? tx.value >= threshold : tx.amount >= threshold));
+          newEvent = newEvent.concat(filtered);
+        }
+        setEvents(newEvent);
+      } catch (err) {
+        console.log("Error fetching events:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWhaleEvents();
+    const interval = setInterval(fetchWhaleEvents, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      const fetchSummary = async () => {
+        try {
+          const { data } = await axios.post("http://localhost:3001/summarize", {
+            transactions: events,
+          });
+          setStructuredSummaries(data.summaries || []);
+        } catch (err) {
+          console.error("Failed to fetch AI summaries:", err);
+        }
+      };
+      fetchSummary();
     }
-}, [events]); 
-if (loading) return <div>Loading please wait</div>;
-if (error) return <div>Some error has occured,please try again</div>
-return (
-    <div className="flex flex-col p-4">
-    <h1 className="text-2xl font-bold mb-4">Whale Wallet Events</h1>
-    
-    {/* Use a container for responsive scrolling on small screens */}
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            {/* Added a complete header row for all columns */}
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chain</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {/* Mapped over the events array just ONCE */}
-          {events.map((tx, index) => (
-            <tr key={tx.hash}>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.chain}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.token}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.amount || tx.value}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.from}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.to}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{tx.time}</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {/* FIX: Corrected URL and added visible text for the link */}
-                <a 
-                  href={`https://etherscan.io/tx/${tx.hash}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-900"
+  }, [events]);
+
+  if (loading) return <div className="text-center py-8 text-gray-400">Loading Whale Events...</div>;
+  if (error) return <div className="text-center py-8 text-red-400">Error: {error}</div>;
+
+  return (
+    <div className="grid overflow-y-scroll h-[100vh] grid-cols-1 md:grid-cols-2 gap-6 hide-scrollbar">
+      {events.map((tx, index) => {
+        const analysis = structuredSummaries[index] || {};
+
+        const summaryText = analysis.summary || "AI summary is being generated...";
+        const alertTypeText = analysis.alertType || "Fetching...";
+        const severityText = analysis.severity || "Fetching...";
+
+        return (
+          <div
+            key={`${tx.hash}-${index}`}
+            className="relative group bg-gray-800 rounded-lg p-5 shadow-md border border-gray-700 hover:shadow-lg transition"
+          >
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm text-gray-400">{tx.chain}</span>
+
+              {analysis.severity ? (
+                <span
+                  className={`px-3 py-1 text-xs rounded-full font-bold ${
+                    severityColors[analysis.severity] || "bg-gray-600 text-white"
+                  }`}
                 >
-                  {/* Displaying a shortened hash is common practice */}
-                  {`${tx.hash.slice(0, 6)}...${tx.hash.slice(-4)}`}
-                </a>
-              </td>
-              {/* Added the summary cell into this single table */}
-              <td className="px-6 py-4 whitespace-nowrap">{summaries[index] || "Loading..."}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  {analysis.severity}
+                </span>
+              ) : (
+                <span className="px-3 py-1 text-xs rounded-full bg-gray-600 text-white">
+                  Loading...
+                </span>
+              )}
+            </div>
+
+            <h3 className="text-lg font-semibold text-blue-300 mb-2">
+              {tx.tokenSymbol || "Native Token"} – {tx.amount?.toFixed(2) || tx.value?.toFixed(2)}
+            </h3>
+
+            <div className="p-3 bg-gray-900 rounded-md border border-gray-700 mt-2">
+              <p className="text-sm text-gray-300">{summaryText}</p>
+            </div>
+
+            {analysis.summary && analysis.alertType && analysis.severity && (
+              <div className="absolute inset-0 bg-black/90 text-white opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center p-4 text-center transition-opacity duration-300 rounded-lg">
+                <p className="text-sm font-semibold mb-2">{analysis.summary}</p>
+                <p className="text-xs uppercase text-purple-400 mb-1">Alert Type: {analysis.alertType}</p>
+                <p className="text-xs italic">Severity: {analysis.severity}</p>
+              </div>
+            )}
+
+            <p className="text-sm text-gray-400 mt-3">
+              From:{" "}
+              <span className="font-mono">{`${tx.from.slice(0, 6)}...${tx.from.slice(-4)}`}</span>
+            </p>
+            <p className="text-sm text-gray-400 mb-2">
+              To: <span className="font-mono">{`${tx.to.slice(0, 6)}...${tx.to.slice(-4)}`}</span>
+            </p>
+
+            <a
+              href={`https://etherscan.io/tx/${tx.hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm"
+            >
+              <FaExternalLinkAlt className="mr-1" /> View Transaction
+            </a>
+          </div>
+        );
+      })}
     </div>
-  </div>
-)
-}
+  );
+};
 
 export default WhaleTracker;
