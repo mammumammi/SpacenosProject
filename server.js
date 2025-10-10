@@ -4,9 +4,11 @@ import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import admin from "firebase-admin";
 import path from "path";
+import fs from "fs";
+
 dotenv.config();
 
-
+const serviceAccount = JSON.parse(fs.readFileSync("/run/secrets/service_account.json", "utf8"));
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
