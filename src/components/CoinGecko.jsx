@@ -41,7 +41,7 @@ const CoinGecko = () => {
       setSummaryLoading(true);
       setSummaryError(null);
       try {
-        const { data } = await axios.post("http://localhost:3001/priceSummarize", { tokenDetails: coinData });
+        const { data } = await axios.post("/priceSummarize", { tokenDetails: coinData });
         setSummaries(data.summaries);
       } catch (err) {
         console.error("Error getting AI summary:", err);

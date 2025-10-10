@@ -3,9 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import admin from "firebase-admin";
-import serviceAccount from "./service_account.json" with { type: "json" };
+import path from "path";
 dotenv.config();
 
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -154,7 +155,7 @@ app.post("/summarize", async (req, res) => {
       });
     }
 
-    res.json({ summaries: summariesToReturn }); // ✅ return full objects
+    res.json({ summaries: summariesToReturn });  // ✅ return full objects
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to generate AI summaries" });
@@ -196,6 +197,14 @@ app.post("/priceSummarize",async (req,res) => {
         res.status(500).json({error: "Failed to generate Ai Price summaries"});
     }
 });
+
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

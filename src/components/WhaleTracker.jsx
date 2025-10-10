@@ -88,7 +88,7 @@ const WhaleTracker = () => {
     if (events.length > 0) {
       const fetchSummary = async () => {
         try {
-          const { data } = await axios.post("http://localhost:3001/summarize", {
+          const { data } = await axios.post("/summarize", {
             transactions: events,
           });
           setStructuredSummaries(data.summaries || []);
