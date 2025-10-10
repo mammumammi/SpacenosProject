@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 
 const severityColors = {
-  High: "bg-red-600 text-white",
+  High: "bg-red-600 text-gray-200",
   Medium: "bg-yellow-500 text-black",
-  Low: "bg-green-600 text-white",
+  Low: "bg-green-600 text-gray-200",
 };
 
 const WhaleTracker = () => {
@@ -100,11 +100,11 @@ const WhaleTracker = () => {
     }
   }, [events]);
 
-  if (loading) return <div className="text-center py-8 text-gray-400">Loading Whale Events...</div>;
+  if (loading) return <div className="text-center py-8 text-gray-300">Loading Whale Events...</div>;
   if (error) return <div className="text-center py-8 text-red-400">Error: {error}</div>;
 
   return (
-    <div className="grid overflow-y-scroll h-[100vh] grid-cols-1 md:grid-cols-2 gap-6 hide-scrollbar">
+    <div className="grid overflow-y-auto h-full grid-cols-1 md:grid-cols-2 gap-6 hide-scrollbar">
       {events.map((tx, index) => {
         const analysis = structuredSummaries[index] || {};
 
@@ -115,47 +115,48 @@ const WhaleTracker = () => {
         return (
           <div
             key={`${tx.hash}-${index}`}
-            className="relative group bg-gray-800 rounded-lg p-5 shadow-md border border-gray-700 hover:shadow-lg transition"
+            className="relative group rounded-lg p-5 shadow-md border border-gray-700 hover:shadow-lg transition"
+            style={{ backgroundColor: '#1a1a1a' }}
           >
             <div className="flex justify-between items-center mb-3">
-              <span className="text-sm text-gray-400">{tx.chain}</span>
+              <span className="text-sm text-gray-300">{tx.chain}</span>
 
               {analysis.severity ? (
                 <span
                   className={`px-3 py-1 text-xs rounded-full font-bold ${
-                    severityColors[analysis.severity] || "bg-gray-600 text-white"
+                    severityColors[analysis.severity] || "bg-gray-600 text-gray-200"
                   }`}
                 >
                   {analysis.severity}
                 </span>
               ) : (
-                <span className="px-3 py-1 text-xs rounded-full bg-gray-600 text-white">
+                <span className="px-3 py-1 text-xs rounded-full bg-gray-600 text-gray-200">
                   Loading...
                 </span>
               )}
             </div>
 
-            <h3 className="text-lg font-semibold text-blue-300 mb-2">
+            <h3 className="text-lg font-semibold text-green-400 mb-2">
               {tx.tokenSymbol || "Native Token"} – {tx.amount?.toFixed(2) || tx.value?.toFixed(2)}
             </h3>
 
-            <div className="p-3 bg-gray-900 rounded-md border border-gray-700 mt-2">
-              <p className="text-sm text-gray-300">{summaryText}</p>
+            <div className="p-3 bg-black rounded-md border border-gray-700 mt-2">
+              <p className="text-sm text-gray-200">{summaryText}</p>
             </div>
 
             {analysis.summary && analysis.alertType && analysis.severity && (
-              <div className="absolute inset-0 bg-black/90 text-white opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center p-4 text-center transition-opacity duration-300 rounded-lg">
+              <div className="absolute inset-0 bg-black/90 text-gray-200 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center p-4 text-center transition-opacity duration-300 rounded-lg">
                 <p className="text-sm font-semibold mb-2">{analysis.summary}</p>
-                <p className="text-xs uppercase text-purple-400 mb-1">Alert Type: {analysis.alertType}</p>
+                <p className="text-xs uppercase text-green-400 mb-1">Alert Type: {analysis.alertType}</p>
                 <p className="text-xs italic">Severity: {analysis.severity}</p>
               </div>
             )}
 
-            <p className="text-sm text-gray-400 mt-3">
+            <p className="text-sm text-gray-300 mt-3">
               From:{" "}
               <span className="font-mono">{`${tx.from.slice(0, 6)}...${tx.from.slice(-4)}`}</span>
             </p>
-            <p className="text-sm text-gray-400 mb-2">
+            <p className="text-sm text-gray-300 mb-2">
               To: <span className="font-mono">{`${tx.to.slice(0, 6)}...${tx.to.slice(-4)}`}</span>
             </p>
 
@@ -163,7 +164,7 @@ const WhaleTracker = () => {
               href={`https://etherscan.io/tx/${tx.hash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm"
+              className="inline-flex items-center text-green-400 hover:text-green-300 text-sm"
             >
               <FaExternalLinkAlt className="mr-1" /> View Transaction
             </a>
