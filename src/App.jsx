@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs } from "firebase/firestore";
 import Coingecko from "./components/CoinGecko";
 import WhaleTracker from "./components/WhaleTracker";
 
+
 function App() {
   useEffect(() => {
     const testFirestore = async () => {
