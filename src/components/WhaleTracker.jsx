@@ -121,56 +121,55 @@ useEffect(() => {
 if (loading) return <div>Loading please wait</div>;
 if (error) return <div>Some error has occured,please try again</div>
 return (
-    <div>
-        <h1>Whale Wallet Events</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Chain</th>
-                    <th>Token</th>
-                    <th>Amount</th>
-                    <th>from</th>
-                    <th>To</th>
-                    <th>Time</th>
-                    <th>Tx</th>
-                </tr>
-
-            </thead>
-            <tbody>
-                {events.map( (tx) => (
-                    <tr key={tx.hash}>
-                        <td>{tx.chain}</td>
-                        <td>{tx.token}</td>
-                        <td>{tx.amount || tx.value}</td>
-                        <td>{tx.from}</td>
-                        <td>{tx.to}</td>
-                        <td>{tx.time}</td>
-                        <td>
-                            <a href={`https://etherscan,io/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" ></a>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-            <tbody>
-
-                
-            {events.map((tx, index) => (
-    <tr key={tx.hash}>
-        <td>{tx.chain}</td>
-        <td>{tx.token}</td>
-        <td>{tx.amount || tx.value}</td>
-        <td>{tx.from}</td>
-        <td>{tx.to}</td>
-        <td>{tx.time}</td>
-        <td>
-            <a href={`https://etherscan.io/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer"></a>
-        </td>
-        <td>{summaries[index] || "Loading summary..."}</td>
-    </tr>
-))}
-            </tbody>
-        </table>
+    <div className="flex flex-col p-4">
+    <h1 className="text-2xl font-bold mb-4">Whale Wallet Events</h1>
+    
+    {/* Use a container for responsive scrolling on small screens */}
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            {/* Added a complete header row for all columns */}
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chain</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {/* Mapped over the events array just ONCE */}
+          {events.map((tx, index) => (
+            <tr key={tx.hash}>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.chain}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.token}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.amount || tx.value}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.from}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.to}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{tx.time}</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {/* FIX: Corrected URL and added visible text for the link */}
+                <a 
+                  href={`https://etherscan.io/tx/${tx.hash}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  {/* Displaying a shortened hash is common practice */}
+                  {`${tx.hash.slice(0, 6)}...${tx.hash.slice(-4)}`}
+                </a>
+              </td>
+              {/* Added the summary cell into this single table */}
+              <td className="px-6 py-4 whitespace-nowrap">{summaries[index] || "Loading..."}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
+  </div>
 )
 }
 

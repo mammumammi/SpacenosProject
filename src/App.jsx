@@ -3,6 +3,7 @@ import { db } from "./FirebaseConfig";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import Coingecko from "./components/CoinGecko";
 import WhaleTracker from "./components/WhaleTracker";
+import CoinGecko from "./components/CoinGecko";
 
 
 function App() {
@@ -27,8 +28,9 @@ function App() {
 
   return (
     <div className="p-8 text-center">
-      <Coingecko/>
+      
       <WhaleTracker/>
+      <CoinGecko/>
     </div>
   );
 }
