@@ -8,7 +8,7 @@ import fs from "fs";
 
 dotenv.config();
 
-const serviceAccount = JSON.parse(fs.readFileSync("/run/secrets/service_account.json", "utf8"));
+const serviceAccount = JSON.parse(fs.readFileSync("/etc/secrets/service_account.json", "utf8"));
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
